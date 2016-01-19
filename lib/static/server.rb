@@ -9,7 +9,7 @@ module Static
     class << self
       def parse_options(argv)
         
-        options = OpenStruct.new
+        options = OpenStruct.new(port: 8080, root: Dir.pwd, index_file: 'index.html')
         parser = OptionParser.new
         
         parser.on("-p", "--port PORT") { |opt| options.port = opt}
@@ -21,22 +21,27 @@ module Static
         [options, files] 
       end 
       
-      def parse_path(root_directory, request_content)
+      def parse_path(request_content)
         path = request_content.split[1] 
-        full_path = root_directory + path     
-        return full_path
+        return path
       end      
 
       def run(argv)
         options, files = parse_options(argv)   
-          
-        server = TCPServer.new('localhost', options.port || 8080) 
+        puts "options #{options}" 
+        server = TCPServer.new('localhost', options.port) 
         loop do
           socket = server.accept
           request_content = socket.gets
-          file  = parse_path(options.root || Dir.pwd, request_content)
+          file  = parse_path(request_content)
+          full_path = ""
+          if file == "/"
+            full_path = options.root + "/index.html"
+          else
+            full_path = options.root + file
+          end
           puts "content #{file}"           
-          File.open(file, "rb") do |file|
+          File.open(full_path, "rb") do |file|
             socket.print "HTTP/1.1 200 OK\r\n" +
                    "Content-Type: text/html\r\n" +
                    "Content-Length: #{file.size}\r\n" +
@@ -54,5 +59,3 @@ module Static
     end   
   end
 end
-
-Static::Server.run(ARGV)
