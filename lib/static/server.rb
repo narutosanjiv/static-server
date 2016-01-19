@@ -1,4 +1,4 @@
-#require "static/server/version"
+require "static/server/version"
 require "socket"
 require 'ostruct'
 require 'optparse'
