@@ -1,4 +1,4 @@
 #!/usr/bin/env ruby
 
-require 'lotus/cli'
+require 'static/server'
 Static::Server.run(ARGV)
